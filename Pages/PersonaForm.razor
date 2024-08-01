@@ -1,0 +1,85 @@
+﻿@page "/PersonaForm"
+@page "/PersonaForm/{Id:int}"
+@page "/Eliminar/{Id:int}/{Bo:int}"
+
+@using Data
+@inject HttpClient http;
+@inject NavigationManager navegador;
+
+<h3>Persona</h3>
+
+<EditForm Model="@persona">
+    <div class="container-fluid">
+        <div class="form-group row mb-1">
+            <label class="col-sm-3">Nombre</label>
+            <div class="col-sm-9">
+                <InputText class="form-control" @bind-Value="@persona.Nombre"></InputText>
+            </div>
+        </div>
+        @if (Bo == 0)
+        {
+            <div class="form-group row mb-1">
+                <div class="col-sm-12">
+                    <button class="btn btn-success" @onclick="Save">Guardar</button>
+                </div>
+            </div>
+        }
+        else
+        {
+            <h4>Esta seguro que desea eliminar</h4>
+            <div class="form-group row mb-1">
+                <div class="col-sm-12">
+                    <button class="btn btn-danger" @onclick="Del">Eliminar</button>
+                </div>
+            </div>
+        }
+
+    </div>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+    [Parameter]
+    public int Bo { get; set; }
+
+    Persona persona = new Persona();
+    Respuesta<object> respuesta = new Respuesta<object>();
+    Respuesta<Persona> respuestaPersona = new Respuesta<Persona>();
+    public string Url = "/api/persona";
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (Id != 0)
+        {
+            respuestaPersona = await http.GetFromJsonAsync<Respuesta<Persona>>(Url + "/" + Id);
+            persona = respuestaPersona.Data;
+        }
+
+    }
+
+    private async Task Save()
+    {
+        if(Id != 0)
+        {
+            var response = await http.PutAsJsonAsync<Persona>(Url, persona);
+            respuesta = response.Content.ReadFromJsonAsync<Respuesta<object>>().Result;
+        }
+        else
+        {
+            var response = await http.PostAsJsonAsync<Persona>(Url, persona);
+            respuesta = response.Content.ReadFromJsonAsync<Respuesta<object>>().Result;
+        }
+
+
+        navegador.NavigateTo("/Personas");
+    }
+
+    private async Task Del()
+    {
+        var response = await http.DeleteAsync(Url+"/"+Id);
+
+        navegador.NavigateTo("/Personas");
+    }
+}

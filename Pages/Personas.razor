@@ -1,0 +1,46 @@
+﻿@page "/Personas";
+
+@* @using System.Net.Http; *@
+@using BlazorCrudPrueba.Data
+@inject HttpClient http;
+<h3>Personas</h3>
+
+
+<div class="row">
+    <div class="col-12 text-end">
+        <a href="PersonaForm">Nuevo</a>
+    </div> 
+</div>
+
+@if(respuesta != null && respuesta.Data != null)
+{
+    <table class="table">
+        <tr>
+            <th>ID</th>
+            <th>NOMBRE</th>
+            <th></th>
+        </tr>
+        @foreach (var e in (List<Persona>)respuesta.Data)
+        {
+            <tr>
+                <td>@e.Id</td>
+                <td>@e.Nombre</td>
+                <td>
+                    <a href="/PersonaForm/@e.Id">Modificar</a>
+                    <a href="/Eliminar/@e.Id/1">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </table>
+}
+
+
+
+@code {
+    public string Url = "/api/persona";
+
+    public Data.Respuesta<List<Persona>> respuesta = new Data.Respuesta<List<Persona>>();
+
+    protected override async Task OnInitializedAsync() =>
+        respuesta = await http.GetFromJsonAsync<Respuesta<List<Persona>>>(Url);
+}
